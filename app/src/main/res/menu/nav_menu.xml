@@ -1,0 +1,135 @@
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_home"
+            android:title="Todos os Lançamentos"
+            android:icon="@drawable/baseline_home_24"
+            android:padding="10dp" />
+
+        <item
+            android:id="@+id/nav_calendar"
+            android:title="Total de Lançamentos Mensais"
+            android:icon="@drawable/baseline_calendar_month"
+            android:padding="10dp" />
+
+        <item
+            android:id="@+id/nav_resumo"
+            android:icon="@drawable/baseline_table_view_24"
+            android:padding="10dp"
+            android:title="Total de Lançamentos" />
+
+    </group>
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:title="Filtro">
+        <menu>
+
+        <item
+            android:id="@+id/nav_inflow"
+            android:title="Entradas"
+            android:icon="@drawable/arrowiconinflow"
+            android:padding="10dp" />
+
+        <item
+            android:id="@+id/nav_outflow"
+            android:icon="@drawable/arrowiconoutflow"
+            android:padding="10dp"
+            android:title="Saídas" />
+        </menu>
+        </item>
+
+        <item
+            android:title="Categorias">
+            <menu>
+                <item
+                    android:id="@+id/nav_salary"
+                    android:icon="@drawable/baseline_money"
+                    android:padding="10dp"
+                    android:title="Salário" />
+
+                <item
+                    android:id="@+id/nav_investments"
+                    android:icon="@drawable/baseline_bar_chart"
+                    android:padding="10dp"
+                    android:title="Investimentos" />
+
+                <item
+                    android:id="@+id/nav_extraIncome"
+                    android:icon="@drawable/baseline_chart"
+                    android:padding="10dp"
+                    android:title="Rendimentos Extras" />
+
+                <item
+                    android:id="@+id/nav_debts"
+                    android:icon="@drawable/baseline_account_balance"
+                    android:padding="10dp"
+                    android:title="Contas" />
+
+                <item
+                    android:id="@+id/nav_food"
+                    android:icon="@drawable/baseline_food"
+                    android:padding="10dp"
+                    android:title="Alimentação" />
+
+                <item
+                    android:id="@+id/nav_health"
+                    android:icon="@drawable/baseline_health"
+                    android:padding="10dp"
+                    android:title="Saúde" />
+
+                <item
+                    android:id="@+id/nav_transport"
+                    android:icon="@drawable/baseline_transport"
+                    android:padding="10dp"
+                    android:title="Transporte" />
+
+                <item
+                    android:id="@+id/nav_edu"
+                    android:icon="@drawable/baseline_school"
+                    android:padding="10dp"
+                    android:title="Educação" />
+
+                <item
+                    android:id="@+id/nav_leisure"
+                    android:icon="@drawable/baseline_leisure"
+                    android:padding="10dp"
+                    android:title="Lazer e Entretenimento" />
+
+                <item
+                    android:id="@+id/nav_others"
+                    android:icon="@drawable/baseline_filter"
+                    android:padding="10dp"
+                    android:title="Outros" />
+
+            </menu>
+        </item>
+    </group>
+
+    <item android:title="Configurações">
+        <menu>
+            <item
+                android:id="@+id/nav_help"
+                android:icon="@drawable/baseline_question_mark_24"
+                android:padding="10dp"
+                android:title="Ajuda" />
+
+            <item
+                android:id="@+id/nav_exit"
+                android:title="Sair"
+                android:icon="@drawable/arrow_back_24"
+                android:padding="10dp" />
+        </menu>
+    </item>
+
+
+</menu>
+
+
+      

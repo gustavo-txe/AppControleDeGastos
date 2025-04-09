@@ -1,0 +1,88 @@
+plugins {
+    id 'com.android.application'
+    id 'org.jetbrains.kotlin.android'
+    id 'com.google.dagger.hilt.android'
+}
+
+android {
+    namespace 'com.example.controledegastos'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.example.controledegastos"
+        minSdk 24
+        targetSdk 33
+        versionCode 1
+        versionName "1.0"
+        testInstrumentationRunner "com.example.controledegastos.HiltTestRunner"
+    }
+
+    testOptions {
+        execution "ANDROIDX_TEST_ORCHESTRATOR"
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
+        }
+    }
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+    kotlinOptions {
+        jvmTarget = '17'
+    }
+
+    buildFeatures{
+        viewBinding = true
+    }
+
+    apply plugin: 'kotlin-kapt'
+
+}
+
+dependencies {
+
+    implementation 'androidx.appcompat:appcompat:1.6.1'
+    implementation 'androidx.core:core-ktx:1.10.1'
+    implementation 'com.google.android.material:material:1.9.0'
+    implementation 'androidx.constraintlayout:constraintlayout:2.1.4'
+    implementation 'androidx.activity:activity:1.9.3'
+    implementation "androidx.lifecycle:lifecycle-viewmodel-ktx:2.2.0"
+
+    //MPAndroidChart(gráficos interativos)
+    implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
+
+    //dagger hilt
+    testImplementation 'com.google.dagger:hilt-android-testing:2.51.1'
+    androidTestImplementation 'com.google.dagger:hilt-android-testing:2.51.1'
+    kaptAndroidTest 'com.google.dagger:hilt-android-compiler:2.51.1'
+    implementation 'com.google.dagger:hilt-android:2.51.1'
+    kapt 'com.google.dagger:hilt-compiler:2.51.1'
+
+    //Room Database
+    implementation 'androidx.room:room-ktx:2.5.2'
+    kapt 'androidx.room:room-compiler:2.5.2'
+
+    //testes
+    testImplementation 'junit:junit:4.13.2'
+    androidTestImplementation 'androidx.test.ext:junit:1.1.5'
+
+    testImplementation("org.mockito:mockito-core:5.2.0")
+    testImplementation "org.mockito:mockito-inline:5.2.0"
+    testImplementation("org.mockito.kotlin:mockito-kotlin:5.1.0")
+
+    testImplementation "androidx.arch.core:core-testing:2.2.0"
+    testImplementation "org.jetbrains.kotlinx:kotlinx-coroutines-test:1.7.3"
+    androidTestUtil 'androidx.test:orchestrator:1.5.1'
+
+    //Espresso
+    implementation 'androidx.test.espresso:espresso-contrib:3.6.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-contrib:3.5.1'
+    androidTestImplementation 'androidx.test.espresso:espresso-intents:3.5.1'
+
+
+}

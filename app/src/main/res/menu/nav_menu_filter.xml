@@ -1,0 +1,129 @@
+<menu
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:id="@+id/nav_homeF"
+            android:title="Todos os Lançamentos"
+            android:icon="@drawable/baseline_home_24"
+            android:padding="10dp" />
+
+    </group>
+
+    <group android:checkableBehavior="single">
+
+        <item
+            android:title="Filtro">
+        <menu>
+
+        <item
+            android:id="@+id/nav_inflowF"
+            android:title="Entradas"
+            android:icon="@drawable/arrowiconinflow"
+            android:padding="10dp" />
+
+        <item
+            android:id="@+id/nav_outflowF"
+            android:icon="@drawable/arrowiconoutflow"
+            android:padding="10dp"
+            android:title="Saídas" />
+        </menu>
+        </item>
+
+        <item
+            android:title="Categorias">
+            <menu>
+                <item
+                    android:id="@+id/nav_salaryF"
+                    android:icon="@drawable/baseline_money"
+                    android:padding="10dp"
+                    android:title="Salário" />
+
+                <item
+                    android:id="@+id/nav_investmentsF"
+                    android:icon="@drawable/baseline_bar_chart"
+                    android:padding="10dp"
+                    android:title="Investimentos" />
+
+                <item
+                    android:id="@+id/nav_extraIncomeF"
+                    android:icon="@drawable/baseline_chart"
+                    android:padding="10dp"
+                    android:title="Rendimentos Extras" />
+
+                <item
+                    android:id="@+id/nav_debtsF"
+                    android:icon="@drawable/baseline_account_balance"
+                    android:padding="10dp"
+                    android:title="Contas" />
+
+                <item
+                    android:id="@+id/nav_foodF"
+                    android:icon="@drawable/baseline_food"
+                    android:padding="10dp"
+                    android:title="Alimentação" />
+
+                <item
+                    android:id="@+id/nav_healthF"
+                    android:icon="@drawable/baseline_health"
+                    android:padding="10dp"
+                    android:title="Saúde" />
+
+                <item
+                    android:id="@+id/nav_transportF"
+                    android:icon="@drawable/baseline_transport"
+                    android:padding="10dp"
+                    android:title="Transporte" />
+                <item
+                    android:id="@+id/nav_eduF"
+                    android:icon="@drawable/baseline_school"
+                    android:padding="10dp"
+                    android:title="Educação" />
+
+                <item
+                    android:id="@+id/nav_leisureF"
+                    android:icon="@drawable/baseline_leisure"
+                    android:padding="10dp"
+                    android:title="Lazer e Entretenimento" />
+
+                <item
+                    android:id="@+id/nav_othersF"
+                    android:icon="@drawable/baseline_filter"
+                    android:padding="10dp"
+                    android:title="Outros" />
+
+            </menu>
+        </item>
+    </group>
+
+    <item android:title="Configurações">
+        <menu>
+
+            <item
+                android:id="@+id/nav_deleteF"
+                android:icon="@drawable/baseline_delete_sweep"
+                android:padding="10dp"
+                android:title="Deletar Lançamentos" />
+
+            <item
+                android:id="@+id/nav_helpF"
+                android:icon="@drawable/baseline_question_mark_24"
+                android:padding="10dp"
+                android:title="Ajuda" />
+
+            <item
+                android:id="@+id/nav_exitF"
+                android:title="Voltar"
+                android:icon="@drawable/arrow_back_24"
+                android:padding="10dp" />
+        </menu>
+    </item>
+
+
+</menu>
+
+
+      
