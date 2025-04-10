@@ -1,7 +1,7 @@
 # 📊 Controle de Gastos
 
 O Aplicativo Android nativo Controle de Gastos foi desenvolvido para auxiliar o usuário a gerenciar suas finanças pessoais de forma simples e eficiente.  
-Nesta aplicação o usuário é capaz de regsitrar todas as suas entradas e saídas, seus ganhos e gastos, visualizar gráficos interativos e ter uma visão clara de seu controle financeiro ao longo de 12 meses!
+Nesta aplicação o usuário é capaz de registrar todas as suas entradas e saídas, seus ganhos e gastos, visualizar gráficos interativos e ter uma visão clara de seu controle financeiro ao longo de 12 meses!
 
 ## 🚀 Funcionalidades
 
@@ -21,7 +21,7 @@ Nesta aplicação o usuário é capaz de regsitrar todas as suas entradas e saí
 ![Screenshot items adicionados](images/screenshotitems.jpeg)
 
  ✅ Visualização de gráficos interativos:
-  - Resumo mensal e anual completo de todos as movimentações financeiras registradas.
+  - Resumo mensal e anual completo de todas as movimentações financeiras registradas.
 
 ![Screenshot graficos mensais](images/screenshotgraficos.jpeg)
 ![Screenshot grafico anual](images/screenshotgraficogeral.jpeg)
@@ -36,14 +36,19 @@ Nesta aplicação o usuário é capaz de regsitrar todas as suas entradas e saí
 
 ## 🛠️ Stack Tecnológica utilizada neste projeto
 
-- **Kotlin** — Linguagem principal de desenvolvimento
-- **Room Database** — Persistência de dados local
-- **MVVM (Model-View-ViewModel)** — Arquitetura modular e escalável
-- **Repository Pattern** — Abstração da camada de dados
-- **Dagger Hilt** — Injeção de dependências simplificada
-- **Coroutines** — Operações assíncronas e concorrência
-- **MPAndroidChart** — Gráficos interativos e personalizáveis
-- **JUnit & Mockito** — Testes unitários
-- **Espresso** — Testes de interface automatizados
+- **Kotlin** (1.8.20) — Linguagem principal de desenvolvimento.
+- **Room Database** (2.5.2) — Persistência de dados local.
+- **MVVM (Model-View-ViewModel)** — Arquitetura modular e escalável.
+- **LiveData** — Para dados observáveis conscientes ao ciclo de vida.
+- **Repository Pattern** — Abstração da camada de dados.
+- **Dagger Hilt** (2.51.1) — Injeção de dependências simplificada.
+- **Coroutines** (coroutines-test:1.7.3) — Operações assíncronas e concorrência.
+- **MPAndroidChart** (3.1.0) — Gráficos interativos e personalizáveis.
+- **JUnit & Mockito** (4.13.2/1.1.5),(5.2.0)— Testes unitários.
+- **Espresso** (3.5.1) — Testes de interface automatizados.
+
+## 📫 Contato
+
+- Email: gustavoteixeira.ggt@gmail.com
 
 
