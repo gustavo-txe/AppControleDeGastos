@@ -47,6 +47,9 @@ Nesta aplicação o usuário é capaz de registrar todas as suas entradas e saí
 - **JUnit & Mockito** (4.13.2/1.1.5),(5.2.0)— Testes unitários.
 - **Espresso** (3.5.1) — Testes de interface automatizados.
 
+- **Versão do Android Studio** — 2024.3.1 Patch 2
+- **Versão do Gradle** — 8.11.1
+
 ## 📫 Contato
 
 - Email: gustavoteixeira.ggt@gmail.com
