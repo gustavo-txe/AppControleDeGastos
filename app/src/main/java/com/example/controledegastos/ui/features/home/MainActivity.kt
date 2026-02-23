@@ -15,15 +15,17 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import androidx.recyclerview.widget.LinearLayoutManager
-import com.example.controledegastos.ui.adapter.MyAdapter
-import com.example.controledegastos.listeners.OnClickInterface
-import com.example.controledegastos.ui.features.months.MonthsActivity
 import com.example.controledegastos.R
+import com.example.controledegastos.data.model.CategoryType
+import com.example.controledegastos.data.model.FlowType
 import com.example.controledegastos.data.model.Items
 import com.example.controledegastos.databinding.ActivityMainBinding
+import com.example.controledegastos.listeners.OnClickInterface
+import com.example.controledegastos.ui.adapter.MyAdapter
 import com.example.controledegastos.ui.features.additem.AddItem
 import com.example.controledegastos.ui.features.bardata.BarDataActivity
 import com.example.controledegastos.ui.features.help.HelpActivity
+import com.example.controledegastos.ui.features.months.MonthsActivity
 import com.example.controledegastos.viewmodel.ItemsViewModel
 import dagger.hilt.android.AndroidEntryPoint
 
@@ -34,7 +36,6 @@ class MainActivity : OnClickInterface, AppCompatActivity() {
     private lateinit var myAdapter: MyAdapter
     private lateinit var toggle: ActionBarDrawerToggle
     private lateinit var drawerLayout: DrawerLayout
-    private val list = ArrayList<Items>()
 
     private val itemsViewModel: ItemsViewModel by viewModels()
 
@@ -47,14 +48,28 @@ class MainActivity : OnClickInterface, AppCompatActivity() {
         binding.recyclerView.layoutManager = LinearLayoutManager(this)
         binding.recyclerView.adapter = myAdapter
 
-        loadAllitems()
-        updateTotalValue()
+        setupObservers()
+        setupDrawer()
+
+        itemsViewModel.applyMainAllFilter()
+
+        binding.floatingActionAddItem.setOnClickListener {
+            startActivity(Intent(this, AddItem::class.java).putExtra("type", "Add"))
+        }
+    }
+
+    private fun setupObservers() {
+        itemsViewModel.mainItems.observe(this) { items ->
+            myAdapter.setItems(items)
+        }
 
         itemsViewModel.numberBalance.observe(this@MainActivity) {
             binding.toolbarBalance.text = it
             changeToolbarColor(it)
         }
+    }
 
+    private fun setupDrawer() {
         drawerLayout = binding.drawerLayout
         val navigationView = binding.navView
 
@@ -70,203 +85,28 @@ class MainActivity : OnClickInterface, AppCompatActivity() {
 
         navigationView.setNavigationItemSelectedListener { menuItem ->
             when (menuItem.itemId) {
-                R.id.nav_home -> {
-
-                    loadAllitems()
-                    updateTotalValue()
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    return@setNavigationItemSelectedListener true
-                    true
-                }
-
-                R.id.nav_calendar -> {
-
-                    startActivity(Intent(this@MainActivity, MonthsActivity::class.java))
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    drawerLayout.closeDrawers()
-                    true
-                }
-
-                R.id.nav_resumo -> {
-
-                    startActivity(Intent(this@MainActivity, BarDataActivity::class.java))
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_inflow -> {
-
-                    loadItemsFlow("Entrada")
-                    updateValueFlow("Entrada")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_outflow -> {
-
-                    loadItemsFlow("Saída")
-                    updateValueFlow("Saída")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_debts -> {
-
-                    loadItemsCategory("Contas")
-                    updateValueCtg("Contas")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_salary -> {
-
-                    loadItemsCategory("Salário")
-                    updateValueCtg("Salário")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_investments -> {
-
-                    loadItemsCategory("Investimentos")
-                    updateValueCtg("Investimentos")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_extraIncome -> {
-
-                    loadItemsCategory("Rendimentos Extras")
-                    updateValueCtg("Rendimentos Extras")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_food -> {
-
-                    loadItemsCategory("Alimentação")
-                    updateValueCtg("Alimentação")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_health -> {
-
-                    loadItemsCategory("Saúde")
-                    updateValueCtg("Saúde")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_transport -> {
-
-                    loadItemsCategory("Transporte")
-                    updateValueCtg("Transporte")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_leisure -> {
-
-                    loadItemsCategory("Lazer e Entretenimento")
-                    updateValueCtg("Lazer e Entretenimento")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_edu -> {
-
-                    loadItemsCategory("Educação")
-                    updateValueCtg("Educação")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_others -> {
-
-                    loadItemsCategory("Outros")
-                    updateValueCtg("Outros")
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_help -> {
-
-                    startActivity(Intent(this@MainActivity, HelpActivity::class.java))
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    true
-                }
-
-                R.id.nav_exit -> {
-
-                    drawerLayout.closeDrawer(GravityCompat.START)
-                    drawerLayout.closeDrawers()
-                    true
-                    finish()
-
-                }
-
-                else -> false
+                R.id.nav_home -> itemsViewModel.applyMainAllFilter()
+                R.id.nav_calendar -> startActivity(Intent(this@MainActivity, MonthsActivity::class.java))
+                R.id.nav_resumo -> startActivity(Intent(this@MainActivity, BarDataActivity::class.java))
+                R.id.nav_inflow -> itemsViewModel.applyMainFlowFilter(FlowType.INFLOW.value)
+                R.id.nav_outflow -> itemsViewModel.applyMainFlowFilter(FlowType.OUTFLOW.value)
+                R.id.nav_debts -> itemsViewModel.applyMainCategoryFilter(CategoryType.DEBTS.value)
+                R.id.nav_salary -> itemsViewModel.applyMainCategoryFilter(CategoryType.SALARY.value)
+                R.id.nav_investments -> itemsViewModel.applyMainCategoryFilter(CategoryType.INVESTMENTS.value)
+                R.id.nav_extraIncome -> itemsViewModel.applyMainCategoryFilter(CategoryType.EXTRA_INCOME.value)
+                R.id.nav_food -> itemsViewModel.applyMainCategoryFilter(CategoryType.FOOD.value)
+                R.id.nav_health -> itemsViewModel.applyMainCategoryFilter(CategoryType.HEALTH.value)
+                R.id.nav_transport -> itemsViewModel.applyMainCategoryFilter(CategoryType.TRANSPORT.value)
+                R.id.nav_leisure -> itemsViewModel.applyMainCategoryFilter(CategoryType.LEISURE.value)
+                R.id.nav_edu -> itemsViewModel.applyMainCategoryFilter(CategoryType.EDUCATION.value)
+                R.id.nav_others -> itemsViewModel.applyMainCategoryFilter(CategoryType.OTHERS.value)
+                R.id.nav_help -> startActivity(Intent(this@MainActivity, HelpActivity::class.java))
+                R.id.nav_exit -> finish()
+                else -> return@setNavigationItemSelectedListener false
             }
+            drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
-
-        binding.floatingActionAddItem.setOnClickListener {
-            startActivity(Intent(this, AddItem::class.java).putExtra("type", "Add"))
-            onPause()
-        }
-    }
-
-    fun loadAllitems() {
-        itemsViewModel.getAllItems().observe(this@MainActivity) {
-            it?.let {
-                myAdapter.setItems(it)
-            }
-        }
-    }
-
-    fun loadItemsCategory(itemCtg: String) {
-        itemsViewModel.getCategory(itemCtg).observe(this@MainActivity) {
-            it?.let {
-                myAdapter.setItems(it)
-            }
-        }
-    }
-
-    fun loadItemsFlow(itemFlow: String) {
-        itemsViewModel.getIOFiltered(itemFlow).observe(this@MainActivity) {
-            it?.let {
-                myAdapter.setItems(it)
-            }
-        }
-    }
-
-    fun updateValueCtg(ctg: String) {
-        itemsViewModel.updateValueCtg(ctg, list)
-    }
-
-    fun updateValueFlow(flow: String) {
-        itemsViewModel.updateValueFlow(flow, list)
-    }
-
-    fun updateTotalValue() {
-        itemsViewModel.updateTotalValue(list)
     }
 
     fun changeToolbarColor(nfTBalance: String) {
@@ -291,8 +131,7 @@ class MainActivity : OnClickInterface, AppCompatActivity() {
                 Toast.makeText(context, "Item excluído!", Toast.LENGTH_SHORT).show()
 
                 itemsViewModel.deleteItem(id)
-                loadAllitems()
-                updateTotalValue()
+                itemsViewModel.refreshMainBalance()
 
             }
             setNegativeButton("Não") { p1, p2 ->
@@ -332,9 +171,9 @@ class MainActivity : OnClickInterface, AppCompatActivity() {
 
     override fun onStart() {
         super.onStart()
-        loadAllitems()
-        updateTotalValue()
+        itemsViewModel.refreshMainBalance()
     }
+
     override fun onPostCreate(savedInstanceState: Bundle?) {
         super.onPostCreate(savedInstanceState)
         toggle.syncState()

@@ -2,10 +2,14 @@ package com.example.controledegastos.ui.features.bardata
 
 import androidx.appcompat.app.AppCompatActivity
 import android.os.Bundle
+import android.graphics.Color
 import androidx.activity.viewModels
 import com.example.controledegastos.databinding.ActivityGratBinding
 import com.example.controledegastos.viewmodel.ItemsViewModel
 import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -22,23 +26,43 @@ class BarDataActivity : AppCompatActivity() {
 
         binding.backIconGratActivity.setOnClickListener { onBackPressed() }
 
-        itemsViewModel.barData()
+        itemsViewModel.loadAnnualChartData()
 
         binding.barGrat.setOnLongClickListener {
-            itemsViewModel.barData()
+            itemsViewModel.loadAnnualChartData()
             true
         }
 
         setupObservers()
     }
+
     private fun setupObservers() {
 
         val barChart: BarChart = binding.barGrat
 
-        itemsViewModel.barData.observe(this@BarDataActivity) {
-            it?.let {
-                barChart.data = it
+        itemsViewModel.annualChartState.observe(this@BarDataActivity) { state ->
+            val entries = arrayListOf(
+                BarEntry(100f, state.inflow.toFloat(), "Entrada Total"),
+                BarEntry(101.5f, state.outflow.toFloat(), "Saída Total"),
+                BarEntry(103f, state.balance.toFloat(), "SaldoTotal")
+            )
+
+            val barDataSet = BarDataSet(entries, "Ganhos / Despesas Total (Em R$)").apply {
+                setColors(
+                    Color.parseColor("#4CAF50"),
+                    Color.parseColor("#DF4646"),
+                    Color.parseColor("#3042A8")
+                )
+                valueTextSize = 1f
+                valueTextColor = Color.BLACK
             }
+
+            barChart.data = BarData(barDataSet)
+            barChart.invalidate()
+
+            binding.textTotalbalance.text = state.balanceText
+            binding.textTotalinflow.text = state.inflowText
+            binding.textTotaloutflow.text = state.outflowText
         }
 
         barChart.apply {
@@ -47,27 +71,6 @@ class BarDataActivity : AppCompatActivity() {
             animateY(1000)
             invalidate()
         }
-
-        itemsViewModel.balanceBardata.observe(this@BarDataActivity) {
-            it?.let {
-                binding.textTotalbalance.text = it
-            }
-        }
-        itemsViewModel.inflowBardata.observe(this@BarDataActivity) {
-            it?.let {
-                binding.textTotalinflow.text = it
-            }
-        }
-        itemsViewModel.outflowBardata.observe(this@BarDataActivity) {
-            it?.let {
-                binding.textTotaloutflow.text = it
-            }
-        }
     }
 
 }
-
-
-
-
-

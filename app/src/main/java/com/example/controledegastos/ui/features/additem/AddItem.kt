@@ -12,18 +12,18 @@ import android.widget.ArrayAdapter
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AlertDialog
-import androidx.lifecycle.lifecycleScope
+import com.example.controledegastos.data.model.CategoryType
+import com.example.controledegastos.data.model.FlowType
 import com.example.controledegastos.data.model.Items
 import com.example.controledegastos.databinding.ActivityAddItemBinding
 import com.example.controledegastos.viewmodel.ItemsViewModel
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
 @AndroidEntryPoint
-class AddItem : AppCompatActivity(){
+class AddItem : AppCompatActivity() {
 
     private lateinit var binding: ActivityAddItemBinding
     private var noteId: Int = 1
@@ -49,7 +49,7 @@ class AddItem : AppCompatActivity(){
 
         type = intent.getStringExtra("type").toString()
 
-        if (type.equals("Update")){
+        if (type == "Update") {
 
             noteId = intent.getIntExtra("id", -1)
             descNote = intent.getStringExtra("desc").toString()
@@ -71,12 +71,12 @@ class AddItem : AppCompatActivity(){
             binding.textViewPay.setText("Método de pagamento anterior: $payMethod")
             binding.textViewDate.setText("Data anterior: $datevalue \n       Clique para editar:")
 
-            if(noteIO == "Saída"){
-                noteIOtext = "Saída"
+            if (noteIO == FlowType.OUTFLOW.value) {
+                noteIOtext = FlowType.OUTFLOW.value
                 binding.textViewFlowEdit.setTextColor(Color.RED)
                 binding.spinnerIO.setSelection(1)
-            }else {
-                noteIOtext = "Entrada"
+            } else {
+                noteIOtext = FlowType.INFLOW.value
                 binding.textViewFlowEdit.setTextColor(Color.GREEN)
             }
 
@@ -86,7 +86,7 @@ class AddItem : AppCompatActivity(){
 
         }
 
-        val IOarray = arrayOf("Entrada", "Saída")
+        val IOarray = FlowType.entries.map { it.value }.toTypedArray()
         var IOSelected: String? = IOarray.first()
 
         binding.spinnerIO.adapter = ArrayAdapter(this,
@@ -95,16 +95,14 @@ class AddItem : AppCompatActivity(){
         binding.spinnerIO.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
 
-                IOSelected = IOarray.get(position)
+                IOSelected = IOarray[position]
 
-                lifecycleScope.launch{
-                    if(IOSelected == "Entrada"){
-                        binding.textViewIO.setText("Entrada")
-                        binding.textViewIO.setTextColor(Color.GREEN)
-                    }else{
-                        binding.textViewIO.setText("Saída")
-                        binding.textViewIO.setTextColor(Color.RED)
-                    }
+                if (IOSelected == FlowType.INFLOW.value) {
+                    binding.textViewIO.setText(FlowType.INFLOW.value)
+                    binding.textViewIO.setTextColor(Color.GREEN)
+                } else {
+                    binding.textViewIO.setText(FlowType.OUTFLOW.value)
+                    binding.textViewIO.setTextColor(Color.RED)
                 }
             }
 
@@ -121,7 +119,7 @@ class AddItem : AppCompatActivity(){
         binding.spinnerPayment.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
 
-                paymentSelected = paymentArray.get(position)
+                paymentSelected = paymentArray[position]
 
             }
 
@@ -129,9 +127,7 @@ class AddItem : AppCompatActivity(){
 
         }
 
-        val categoryArray = arrayOf( "Salário", "Investimentos", "Rendimentos Extras", "Contas",
-            "Alimentação", "Saúde", "Transporte",
-            "Lazer e Entretenimento","Educação", "Outros")
+        val categoryArray = CategoryType.valuesList.toTypedArray()
         var categorySelected: String? = categoryArray.first()
 
         binding.spinnerCategory.adapter = ArrayAdapter(this,
@@ -139,7 +135,7 @@ class AddItem : AppCompatActivity(){
         binding.spinnerCategory.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(p0: AdapterView<*>?, p1: View?, position: Int, p3: Long) {
 
-                categorySelected = categoryArray.get(position)
+                categorySelected = categoryArray[position]
 
             }
 
@@ -149,71 +145,62 @@ class AddItem : AppCompatActivity(){
 
         openDatePicker()
 
-        binding.saveNote.setOnClickListener{
+        binding.saveNote.setOnClickListener {
 
             val desc = binding.DescId.text.toString()
             val obs = binding.ObsId.text.toString()
-            val value = binding.editValue.text.toString().replace(",",".")
-            var finalValue: Double
+            val value = binding.editValue.text.toString().replace(",", ".")
 
-            if (TextUtils.isEmpty(value)){
+            if (TextUtils.isEmpty(value)) {
+                Toast.makeText(this, "Insira um valor válido...", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-                Toast.makeText(this, "Insira um valor válido...",
-                    Toast.LENGTH_SHORT).show()
+            if (binding.textDateSelected.text == "--/--/----") {
+                Toast.makeText(this, "Insira uma data válida...", Toast.LENGTH_SHORT).show()
+                return@setOnClickListener
+            }
 
-            }else if(binding.textDateSelected.text == "--/--/----"){
-                Toast.makeText(this,
-                "Insira uma data válida...", Toast.LENGTH_SHORT).show()} else {
+            val finalValue = parseSignedValue(value.toDouble(), IOSelected.orEmpty())
 
-                if(IOSelected == "Entrada"){
-                    finalValue = value.toDouble()
-                }else {
-                    finalValue = value.toDouble()
-                    finalValue = "-$finalValue".toDouble()
-                }
+            if (type == "Add") {
+                saveItem(
+                    itemId = 0,
+                    desc = desc,
+                    obs = obs,
+                    io = IOSelected.orEmpty(),
+                    payment = paymentSelected.orEmpty(),
+                    value = finalValue,
+                    category = categorySelected.orEmpty()
+                )
+                finish()
 
-                if (type.equals("Add")){
+            } else {
 
-                    if(IOSelected == "Entrada") IOfinalValue = "Entrada" else IOfinalValue = "Saída"
+                val alertDialog = AlertDialog.Builder(this)
 
-                    val model = Items(0, desc, obs, IOfinalValue, paymentSelected!!, finalValue,
-                        date = binding.textDateSelected.text.toString(),
-                        cal.get(Calendar.MONTH).toString(), categorySelected!!)
+                alertDialog.apply {
 
-                    itemsViewModel.insertItem(model)
+                    setTitle("Editar Item")
+                    setMessage("Deseja confirmar todas as alterações?")
 
-                    finish()
-
-                }else{
-
-                    val alertDialog = AlertDialog.Builder(this)
-
-                    alertDialog.apply{
-
-                        setTitle("Editar Item")
-                        setMessage("Deseja confirmar todas as alterações?")
-
-                        setPositiveButton("Sim") { dialogInterface: DialogInterface?, p3: Int ->
-
-                            if(IOSelected == "Entrada") IOfinalValue = "Entrada" else
-                                IOfinalValue = "Saída"
-
-                            val model = Items(noteId, desc, obs, IOfinalValue,
-                                paymentSelected!!, finalValue,
-                                date = binding.textDateSelected.text.toString(),
-                                cal.get(Calendar.MONTH).toString(), categorySelected!!)
-
-                            itemsViewModel.updateItem(model)
-
-                            finish()
-
-                        }
-                        setNegativeButton("Não") { p1, p2 ->
-                            Toast.makeText(context, "Cancelado", Toast.LENGTH_SHORT).show()
-                            finish()
-                        }
-                    }.create().show()
-                }
+                    setPositiveButton("Sim") { dialogInterface: DialogInterface?, p3: Int ->
+                        saveItem(
+                            itemId = noteId,
+                            desc = desc,
+                            obs = obs,
+                            io = IOSelected.orEmpty(),
+                            payment = paymentSelected.orEmpty(),
+                            value = finalValue,
+                            category = categorySelected.orEmpty()
+                        )
+                        finish()
+                    }
+                    setNegativeButton("Não") { p1, p2 ->
+                        Toast.makeText(context, "Cancelado", Toast.LENGTH_SHORT).show()
+                        finish()
+                    }
+                }.create().show()
             }
         }
 
@@ -222,12 +209,46 @@ class AddItem : AppCompatActivity(){
         }
     }
 
-    fun openDatePicker(){
+    private fun parseSignedValue(input: Double, selectedFlow: String): Double {
+        return if (selectedFlow == FlowType.OUTFLOW.value) -input else input
+    }
+
+    private fun saveItem(
+        itemId: Int,
+        desc: String,
+        obs: String,
+        io: String,
+        payment: String,
+        value: Double,
+        category: String
+    ) {
+        IOfinalValue = if (io == FlowType.INFLOW.value) FlowType.INFLOW.value else FlowType.OUTFLOW.value
+
+        val model = Items(
+            itemId,
+            desc,
+            obs,
+            IOfinalValue,
+            payment,
+            value,
+            date = binding.textDateSelected.text.toString(),
+            cal.get(Calendar.MONTH).toString(),
+            category
+        )
+
+        if (type == "Add") {
+            itemsViewModel.insertItem(model)
+        } else {
+            itemsViewModel.updateItem(model)
+        }
+    }
+
+    fun openDatePicker() {
         val dateSetListener = DatePickerDialog.OnDateSetListener { view, year, monthOfYear, dayOfMonth ->
-                cal.set(Calendar.YEAR, year)
-                cal.set(Calendar.MONTH, monthOfYear)
-                cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
-                updateDateInView()
+            cal.set(Calendar.YEAR, year)
+            cal.set(Calendar.MONTH, monthOfYear)
+            cal.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+            updateDateInView()
         }
 
         binding.textViewDate.setOnClickListener {
@@ -253,7 +274,7 @@ class AddItem : AppCompatActivity(){
 
     private fun updateDateInView() {
         val myFormat = "dd/MM/yyyy"
-        val sdf = SimpleDateFormat(myFormat, Locale("pt","BR"))
+        val sdf = SimpleDateFormat(myFormat, Locale("pt", "BR"))
         binding.textDateSelected.text = sdf.format(cal.time)
     }
 

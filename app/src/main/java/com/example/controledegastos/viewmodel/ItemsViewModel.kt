@@ -1,16 +1,14 @@
 package com.example.controledegastos.viewmodel
 
-import android.graphics.Color
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
+import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.example.controledegastos.data.model.FlowType
 import com.example.controledegastos.data.model.Items
 import com.example.controledegastos.data.repository.ItemsRepository
 import com.example.controledegastos.data.repository.ItemsSumRepository
-import com.github.mikephil.charting.data.BarData
-import com.github.mikephil.charting.data.BarDataSet
-import com.github.mikephil.charting.data.BarEntry
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
@@ -20,47 +18,63 @@ import javax.inject.Inject
 @HiltViewModel
 class ItemsViewModel @Inject constructor(
     private val itemsRepository: ItemsRepository,
-    private val itemsSumRepository: ItemsSumRepository) : ViewModel() {
+    private val itemsSumRepository: ItemsSumRepository
+) : ViewModel() {
 
-    private val allItems: LiveData<List<Items>> = itemsRepository.allItems
+    data class TotalsUiState(
+        val inflow: String = NumberFormat.getCurrencyInstance().format(0.0),
+        val outflow: String = NumberFormat.getCurrencyInstance().format(0.0),
+        val balance: String = NumberFormat.getCurrencyInstance().format(0.0)
+    )
 
-    private val mNumberFormatBalance: MutableLiveData<String> = MutableLiveData()
+    data class AnnualChartUiState(
+        val inflow: Double,
+        val outflow: Double,
+        val balance: Double,
+        val inflowText: String,
+        val outflowText: String,
+        val balanceText: String
+    )
+
+    private sealed class MainFilter {
+        data object All : MainFilter()
+        data class Flow(val flow: String) : MainFilter()
+        data class Category(val category: String) : MainFilter()
+    }
+
+    private data class MonthFilter(
+        val month: String,
+        val category: String? = null,
+        val flow: String? = null
+    )
+
+    private val mMainFilter = MutableLiveData<MainFilter>(MainFilter.All)
+    private val mMonthFilter = MutableLiveData<MonthFilter>()
+
+    val mainItems: LiveData<List<Items>> = Transformations.switchMap(mMainFilter) { filter ->
+        when (filter) {
+            MainFilter.All -> itemsRepository.allItems
+            is MainFilter.Flow -> itemsRepository.getIOFiltered(filter.flow)
+            is MainFilter.Category -> itemsRepository.getCategory(filter.category)
+        }
+    }
+
+    val monthItems: LiveData<List<Items>> = Transformations.switchMap(mMonthFilter) { filter ->
+        when {
+            filter.flow != null -> itemsRepository.getMonthFlow(filter.month, filter.flow)
+            filter.category != null -> itemsRepository.getMonthCtg(filter.month, filter.category)
+            else -> itemsRepository.getMonth(filter.month)
+        }
+    }
+
+    private val mNumberFormatBalance = MutableLiveData<String>()
     val numberBalance: LiveData<String> get() = mNumberFormatBalance
 
-    //Valor total anual para exibição gráfica em barras
-    private val mBardata: MutableLiveData<BarData> = MutableLiveData()
-    val barData: LiveData<BarData> get() = mBardata
+    private val mMonthTotals = MutableLiveData<TotalsUiState>()
+    val monthTotals: LiveData<TotalsUiState> get() = mMonthTotals
 
-    private val mBalanceBardata: MutableLiveData<String> = MutableLiveData()
-    val balanceBardata: LiveData<String> get() = mBalanceBardata
-
-    private val mInflowBardata: MutableLiveData<String> = MutableLiveData()
-    val inflowBardata: LiveData<String> get() = mInflowBardata
-
-    private val mOutflowBardata: MutableLiveData<String> = MutableLiveData()
-    val outflowBardata: LiveData<String> get() = mOutflowBardata
-
-
-    //Cálculo de valores mensais
-    private val mInflowMonth: MutableLiveData<String> = MutableLiveData()
-    val inflowMonth: LiveData<String> get() = mInflowMonth
-
-    private val mOutflowMonth: MutableLiveData<String> = MutableLiveData()
-    val outflowMonth: LiveData<String> get() = mOutflowMonth
-
-    private val mBalanceMonth: MutableLiveData<String> = MutableLiveData()
-    val balanceMonth: LiveData<String> get() = mBalanceMonth
-
-
-    //Cálculo de valores mensais filtrados por Entrada/Saída
-    private val mInflowTotal: MutableLiveData<String> = MutableLiveData()
-    val inflowTotal: LiveData<String> get() = mInflowTotal
-
-    private val mOutflowTotal: MutableLiveData<String> = MutableLiveData()
-    val outflowTotal: LiveData<String> get() = mOutflowTotal
-
-    private val mBalanceTotal: MutableLiveData<String> = MutableLiveData()
-    val balanceTotal: LiveData<String> get() = mBalanceTotal
+    private val mAnnualChartState = MutableLiveData<AnnualChartUiState>()
+    val annualChartState: LiveData<AnnualChartUiState> get() = mAnnualChartState
 
     fun insertItem(items: Items) = viewModelScope.launch(Dispatchers.IO) {
         itemsRepository.insertItem(items)
@@ -78,162 +92,100 @@ class ItemsViewModel @Inject constructor(
         itemsRepository.deleteItemMonth(monthNumber)
     }
 
-    fun getAllItems(): LiveData<List<Items>> {
-        return allItems
+    fun applyMainAllFilter() {
+        mMainFilter.value = MainFilter.All
+        refreshMainBalance()
     }
 
-    fun getMonth(monthNumber: String): LiveData<List<Items>> {
-        return itemsRepository.getMonth(monthNumber)
+    fun applyMainFlowFilter(flow: String) {
+        mMainFilter.value = MainFilter.Flow(flow)
+        refreshMainBalance()
     }
 
-    fun getMonthFlow(monthNumber: String, flow: String): LiveData<List<Items>> {
-        return itemsRepository.getMonthFlow(monthNumber, flow)
+    fun applyMainCategoryFilter(category: String) {
+        mMainFilter.value = MainFilter.Category(category)
+        refreshMainBalance()
     }
 
-    fun getIOFiltered(io: String): LiveData<List<Items>> {
-        return itemsRepository.getIOFiltered(io)
+    fun applyMonthFilter(month: String, category: String? = null, flow: String? = null) {
+        mMonthFilter.value = MonthFilter(month, category, flow)
+        refreshMonthTotals(month, category, flow)
     }
 
-    fun getCategory(category: String): LiveData<List<Items>> {
-        return itemsRepository.getCategory(category)
-    }
-
-    fun getMonthCtg(monthNumber: String, category: String? = null): LiveData<List<Items>> {
-        return itemsRepository.getMonthCtg(monthNumber, category)
-    }
-
-    fun updateValueCtg(ctg: String, list: ArrayList<Items>) {
-
-        for (i in 0..list.size) {
-
-            viewModelScope.launch(Dispatchers.IO) {
-                val totalBalanceT = itemsSumRepository.getSumValueCtg(ctg)
-                val nfTBalance = NumberFormat.getCurrencyInstance().format(totalBalanceT)
-                mNumberFormatBalance.postValue(nfTBalance)
-            }
-        }
-    }
-
-    fun updateTotalValue(list: ArrayList<Items>) {
-
-        for (i in 0..list.size) {
-
-            viewModelScope.launch(Dispatchers.IO) {
-                val totalBalanceT = itemsSumRepository.getSumValue()
-                val nfTBalance = NumberFormat.getCurrencyInstance().format(totalBalanceT)
-                mNumberFormatBalance.postValue(nfTBalance)
-            }
-        }
-    }
-
-    fun updateValueFlow(flow: String, list: ArrayList<Items>) {
-
-        for (i in 0..list.size) {
-
-            viewModelScope.launch(Dispatchers.IO) {
-                val totalBalanceT = itemsSumRepository.getSumTotalFlowValue(flow)
-                val nfTBalance = NumberFormat.getCurrencyInstance().format(totalBalanceT)
-                mNumberFormatBalance.postValue(nfTBalance)
-            }
-        }
-    }
-
-    //Carregar valor total anual para exibição gráfica
-    fun barData() {
-
+    fun refreshMainBalance() {
         viewModelScope.launch(Dispatchers.IO) {
-
-            val entries: ArrayList<BarEntry> = ArrayList()
-
-            val totalBalance = itemsSumRepository.getSumTotalValueFloat()
-            val totalOutflow = itemsSumRepository.getSumOutflowTotalValueFloat("Saída")
-            val inflow = totalBalance - totalOutflow
-
-            val totalBalanceT = itemsSumRepository.getSumValue()
-            val outflowTotalT = itemsSumRepository.getSumTotalFlowValue("Saída")
-            val inflowT = totalBalanceT - outflowTotalT
-
-            val nfT = NumberFormat.getCurrencyInstance().format(inflowT)
-            val nfTOutflow = NumberFormat.getCurrencyInstance().format(outflowTotalT)
-            val nfTBalance = NumberFormat.getCurrencyInstance().format(totalBalanceT)
-
-            val outflowPositive = -totalOutflow
-            val totalBalancePositive: Float = inflow - outflowPositive
-
-            mInflowBardata.postValue(nfT)
-            mOutflowBardata.postValue(nfTOutflow)
-            mBalanceBardata.postValue(nfTBalance)
-
-            entries.add(BarEntry(100f, inflow, "Entrada Total"))
-            entries.add(BarEntry(101.5f, -totalOutflow, "Saída Total"))
-            entries.add(BarEntry(103f, totalBalancePositive, "SaldoTotal"))
-
-            val GREEN = Color.parseColor("#4CAF50")
-            val RED = Color.parseColor("#DF4646")
-            val BLUE = Color.parseColor("#3042A8")
-
-            val barDataSet = BarDataSet(entries, "Ganhos / Despesas Total (Em R$)").apply {
-                setColors(GREEN, RED, BLUE)
-                valueTextSize = 1f
-                valueTextColor = Color.BLACK
+            val value = when (val filter = mMainFilter.value ?: MainFilter.All) {
+                MainFilter.All -> itemsSumRepository.getSumValue()
+                is MainFilter.Flow -> itemsSumRepository.getSumTotalFlowValue(filter.flow)
+                is MainFilter.Category -> itemsSumRepository.getSumValueCtg(filter.category)
             }
-
-            val barData = BarData(barDataSet)
-            mBardata.postValue(barData)
-
+            mNumberFormatBalance.postValue(NumberFormat.getCurrencyInstance().format(value))
         }
     }
 
-    //Carregar valores totais filtrados por mês e categoria
-    fun loadAllitemsFiltered(month: String, ctg: String? = null) {
-
+    fun loadAnnualChartData() {
         viewModelScope.launch(Dispatchers.IO) {
+            val totalBalance = itemsSumRepository.getSumValue()
+            val totalOutflowAbs = kotlin.math.abs(itemsSumRepository.getSumTotalFlowValue(FlowType.OUTFLOW.value))
+            val inflow = totalBalance - (-totalOutflowAbs)
 
-            var totalBalance = itemsSumRepository.getSumMonthValue(month)
-            var totalOutflow = itemsSumRepository.getSumFlowValue(month, "Saída")
-
-            if (ctg != null) {
-                totalBalance = itemsSumRepository.getSumMonthValueCtg(month, ctg)
-                totalOutflow = itemsSumRepository.getSumOutflowValueCtg(month, "Saída", ctg)
-            }
-
-            val inflow = totalBalance - totalOutflow
-            val nf = NumberFormat.getCurrencyInstance().format(inflow)
-            val nfOutflow = NumberFormat.getCurrencyInstance().format(totalOutflow)
-            val nfBalance = NumberFormat.getCurrencyInstance().format(totalBalance)
-
-            mInflowMonth.postValue(nf)
-            mOutflowMonth.postValue(nfOutflow)
-            mBalanceMonth.postValue(nfBalance)
-
+            mAnnualChartState.postValue(
+                AnnualChartUiState(
+                    inflow = inflow,
+                    outflow = -totalOutflowAbs,
+                    balance = totalBalance,
+                    inflowText = NumberFormat.getCurrencyInstance().format(inflow),
+                    outflowText = NumberFormat.getCurrencyInstance().format(-totalOutflowAbs),
+                    balanceText = NumberFormat.getCurrencyInstance().format(totalBalance)
+                )
+            )
         }
     }
 
-    //Carregar valores totais filtrados por mês
-    fun loadAllitemsFlow(flow: String, month: String) {
-
+    fun refreshMonthTotals(month: String, category: String? = null, flow: String? = null) {
         viewModelScope.launch(Dispatchers.IO) {
+            val totals = when {
+                flow != null -> {
+                    val totalOutflow = itemsSumRepository.getSumFlowValue(month, flow)
+                    if (flow == FlowType.INFLOW.value) {
+                        TotalsUiState(
+                            inflow = NumberFormat.getCurrencyInstance().format(totalOutflow),
+                            outflow = NumberFormat.getCurrencyInstance().format(0.0),
+                            balance = NumberFormat.getCurrencyInstance().format(0.0)
+                        )
+                    } else {
+                        TotalsUiState(
+                            inflow = NumberFormat.getCurrencyInstance().format(0.0),
+                            outflow = NumberFormat.getCurrencyInstance().format(totalOutflow),
+                            balance = NumberFormat.getCurrencyInstance().format(0.0)
+                        )
+                    }
+                }
 
-            val totalBalance = itemsSumRepository.getSumMonthValue(month)
-            val totalOutflow = itemsSumRepository.getSumFlowValue(month, flow)
-            val totalInflow = itemsSumRepository.getSumFlowValue(month, "Saída")
+                category != null -> {
+                    val totalBalance = itemsSumRepository.getSumMonthValueCtg(month, category)
+                    val totalOutflow = itemsSumRepository.getSumOutflowValueCtg(month, FlowType.OUTFLOW.value, category)
+                    val inflow = totalBalance - totalOutflow
+                    TotalsUiState(
+                        inflow = NumberFormat.getCurrencyInstance().format(inflow),
+                        outflow = NumberFormat.getCurrencyInstance().format(totalOutflow),
+                        balance = NumberFormat.getCurrencyInstance().format(totalBalance)
+                    )
+                }
 
-            val inflow = totalBalance - totalInflow
-
-            val nfInflow = NumberFormat.getCurrencyInstance().format(inflow)
-            val nfOutflow = NumberFormat.getCurrencyInstance().format(totalOutflow)
-            val nfNullValue = NumberFormat.getCurrencyInstance().format(0.00)
-
-            if(flow == "Entrada"){
-                mInflowTotal.postValue(nfInflow)
-                mOutflowTotal.postValue(nfNullValue)
-                mBalanceTotal.postValue(nfNullValue)
-            }else{
-                mInflowTotal.postValue(nfNullValue)
-                mOutflowTotal.postValue(nfOutflow)
-                mBalanceTotal.postValue(nfNullValue)
+                else -> {
+                    val totalBalance = itemsSumRepository.getSumMonthValue(month)
+                    val totalOutflow = itemsSumRepository.getSumFlowValue(month, FlowType.OUTFLOW.value)
+                    val inflow = totalBalance - totalOutflow
+                    TotalsUiState(
+                        inflow = NumberFormat.getCurrencyInstance().format(inflow),
+                        outflow = NumberFormat.getCurrencyInstance().format(totalOutflow),
+                        balance = NumberFormat.getCurrencyInstance().format(totalBalance)
+                    )
+                }
             }
+
+            mMonthTotals.postValue(totals)
         }
     }
-
 }
