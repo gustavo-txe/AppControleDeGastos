@@ -16,8 +16,7 @@ class MonthTotalValueTest {
 
     @Before
     fun setUp() {
-        val context = mock<Context>()
-        monthTotalValue = MonthTotalValue(context, itemsSumRepository)
+        monthTotalValue = MonthTotalValue( itemsSumRepository)
     }
 
     @Test

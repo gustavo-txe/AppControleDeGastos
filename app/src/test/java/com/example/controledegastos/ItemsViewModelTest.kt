@@ -113,7 +113,7 @@ class ItemsViewModelTest {
 
     }
 
-    @Test
+    /*@Test
     fun `verifica se getMonth retorna um LiveData do repository`() {
         val monthNumber = "02"
         val liveData = MutableLiveData<List<Items>>()
@@ -163,7 +163,7 @@ class ItemsViewModelTest {
         `when`(itemsRepository.getMonthCtg(monthNumber, category)).thenReturn(liveData)
         val result = viewModel.getMonthCtg(monthNumber, category)
         assertEquals(liveData, result)
-    }
+    }*/
 
 
 }

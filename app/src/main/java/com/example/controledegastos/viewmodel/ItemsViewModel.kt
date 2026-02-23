@@ -2,7 +2,6 @@ package com.example.controledegastos.viewmodel
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
-import androidx.lifecycle.Transformations
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.controledegastos.data.model.FlowType
@@ -10,6 +9,7 @@ import com.example.controledegastos.data.model.Items
 import com.example.controledegastos.data.repository.ItemsRepository
 import com.example.controledegastos.data.repository.ItemsSumRepository
 import dagger.hilt.android.lifecycle.HiltViewModel
+import androidx.lifecycle.switchMap
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import java.text.NumberFormat
@@ -51,7 +51,7 @@ class ItemsViewModel @Inject constructor(
     private val mMainFilter = MutableLiveData<MainFilter>(MainFilter.All)
     private val mMonthFilter = MutableLiveData<MonthFilter>()
 
-    val mainItems: LiveData<List<Items>> = Transformations.switchMap(mMainFilter) { filter ->
+    val mainItems: LiveData<List<Items>> = mMainFilter.switchMap { filter ->
         when (filter) {
             MainFilter.All -> itemsRepository.allItems
             is MainFilter.Flow -> itemsRepository.getIOFiltered(filter.flow)
@@ -59,7 +59,7 @@ class ItemsViewModel @Inject constructor(
         }
     }
 
-    val monthItems: LiveData<List<Items>> = Transformations.switchMap(mMonthFilter) { filter ->
+    val monthItems: LiveData<List<Items>> = mMonthFilter.switchMap { filter ->
         when {
             filter.flow != null -> itemsRepository.getMonthFlow(filter.month, filter.flow)
             filter.category != null -> itemsRepository.getMonthCtg(filter.month, filter.category)

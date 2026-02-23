@@ -40,8 +40,8 @@ object DatabaseModule {
 
     @Provides
     @Singleton
-    fun provideMonthTotalValue(@ApplicationContext context: Context, itemsSumRepository: ItemsSumRepository): MonthTotalValue {
-        return MonthTotalValue(context, itemsSumRepository)
+    fun provideMonthTotalValue(itemsSumRepository: ItemsSumRepository): MonthTotalValue {
+        return MonthTotalValue(itemsSumRepository)
     }
 }
 
