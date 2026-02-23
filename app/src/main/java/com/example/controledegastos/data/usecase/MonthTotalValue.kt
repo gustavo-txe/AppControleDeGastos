@@ -1,22 +1,18 @@
 package com.example.controledegastos.data.usecase
 
-import android.content.Context
 import com.example.controledegastos.data.repository.ItemsSumRepository
-import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 class MonthTotalValue @Inject constructor(
-    @ApplicationContext context: Context,
-    private val itemsSumRepository: ItemsSumRepository) {
+    private val itemsSumRepository: ItemsSumRepository
+) {
 
-    // Função para obter o saldo total para representação gráfica
     suspend fun totalBalancePie(month: String): Float = withContext(Dispatchers.IO) {
         return@withContext itemsSumRepository.getSumMonthValueFloat(month)
     }
 
-    // Função para obter o valor total de Saída para representação gráfica
     suspend fun outflowTotalPie(month: String): Float = withContext(Dispatchers.IO) {
         return@withContext itemsSumRepository.getSumOutflowValueFloat(month, "Saída")
     }
